@@ -28,17 +28,20 @@ canvas {
   border: 2px solid #333;
 }
 
-/* Opensource badge */
-.opensource-badge {
+/* Footer badges */
+.footer-badges {
   position: fixed;
   bottom: 20px;
   left: 20px;
   z-index: 1000;
+  display: flex;
+  gap: 10px;
   font-family: 'Courier New', monospace;
   font-size: 12px;
 }
 
-.opensource-badge a {
+.opensource-badge a,
+.contact-badge a {
   color: #666;
   text-decoration: none;
   transition: color 0.3s ease;
@@ -50,7 +53,8 @@ canvas {
   display: inline-block;
 }
 
-.opensource-badge a:hover {
+.opensource-badge a:hover,
+.contact-badge a:hover {
   color: #fff;
   border-color: #666;
 }
@@ -90,16 +94,18 @@ canvas {
       0 0 40px rgba(0, 0, 0, 0.4);
   }
   
-  .opensource-badge {
+  .footer-badges {
     position: relative;
     bottom: auto;
     left: auto;
     display: flex;
     justify-content: center;
+    gap: 8px;
     margin: 10px 0;
   }
   
-  .opensource-badge a {
+  .opensource-badge a,
+  .contact-badge a {
     font-size: 11px;
     padding: 4px 8px;
   }

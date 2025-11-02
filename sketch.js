@@ -8,7 +8,7 @@ let params = {
   lineColor: "#ffffff",
   noiseStrength: 2.0,
   scale: 20,
-  density: 0.6,
+  density: 0.7,
   animationSpeed: 0.05, // Centered in range (0.0005 to 0.1)
   animated: false, // Default to static
   animationMode: 'evolve', // 'evolve', 'particles'
@@ -217,30 +217,9 @@ function drawFlowField() {
         // Skip if pixel is too bright (use inverse density based on brightness)
         shouldDraw = !(random(100) > map(bright, 0, 100, min(params.density, 1.0) * 100, 10));
       } else {
-        // Density check - handle full range 0.1 to 2.0
-        if (params.density >= 1.0) {
-          // For density >= 1.0, always draw at least one shape
-          shouldDraw = true;
-          
-          // Calculate how many shapes to draw based on density
-          // At density 1.0: always 1 shape
-          // At density 1.5: always 1 shape + 50% chance for second = average 1.5
-          // At density 2.0: always 2 shapes
-          if (params.density >= 2.0) {
-            drawCount = 2;
-          } else if (params.density > 1.0) {
-            // For values between 1.0 and 2.0:
-            // Always draw 1, plus probability for second based on fractional part
-            let fractionalPart = params.density - 1.0;
-            if (random() < fractionalPart) {
-              drawCount = 2;
-            }
-          }
-          // At exactly 1.0, drawCount stays at 1
-        } else {
-          // Normal probability check for density < 1.0
-          shouldDraw = random() <= params.density;
-        }
+        // Simple probability check - density directly maps to chance of drawing
+        // Density 0.1 = 10% chance, density 0.5 = 50% chance, density 1.0 = 100% chance
+        shouldDraw = random() <= params.density;
       }
       
       if (shouldDraw) {
@@ -293,20 +272,8 @@ function drawSpiralField() {
         let bright = brightness(c);
         shouldDraw = !(random(100) > map(bright, 0, 100, min(params.density, 1.0) * 100, 10));
       } else {
-        if (params.density >= 1.0) {
-          shouldDraw = true;
-          
-          if (params.density >= 2.0) {
-            drawCount = 2;
-          } else if (params.density > 1.0) {
-            let fractionalPart = params.density - 1.0;
-            if (random() < fractionalPart) {
-              drawCount = 2;
-            }
-          }
-        } else {
-          shouldDraw = random() <= params.density;
-        }
+        // Simple probability check - density directly maps to chance of drawing
+        shouldDraw = random() <= params.density;
       }
       
       if (shouldDraw) {
@@ -360,20 +327,8 @@ function drawVortexField() {
         let bright = brightness(c);
         shouldDraw = !(random(100) > map(bright, 0, 100, min(params.density, 1.0) * 100, 10));
       } else {
-        if (params.density >= 1.0) {
-          shouldDraw = true;
-          
-          if (params.density >= 2.0) {
-            drawCount = 2;
-          } else if (params.density > 1.0) {
-            let fractionalPart = params.density - 1.0;
-            if (random() < fractionalPart) {
-              drawCount = 2;
-            }
-          }
-        } else {
-          shouldDraw = random() <= params.density;
-        }
+        // Simple probability check - density directly maps to chance of drawing
+        shouldDraw = random() <= params.density;
       }
       
       if (shouldDraw) {
@@ -437,20 +392,8 @@ function drawCentripetalField() {
         let bright = brightness(c);
         shouldDraw = !(random(100) > map(bright, 0, 100, min(params.density, 1.0) * 100, 10));
       } else {
-        if (params.density >= 1.0) {
-          shouldDraw = true;
-          
-          if (params.density >= 2.0) {
-            drawCount = 2;
-          } else if (params.density > 1.0) {
-            let fractionalPart = params.density - 1.0;
-            if (random() < fractionalPart) {
-              drawCount = 2;
-            }
-          }
-        } else {
-          shouldDraw = random() <= params.density;
-        }
+        // Simple probability check - density directly maps to chance of drawing
+        shouldDraw = random() <= params.density;
       }
       
       if (shouldDraw) {
@@ -802,7 +745,7 @@ function setupControls() {
   
   // Static Control Sliders (always visible)
   controlPanel.createSlider('scale-slider', 'Scale', 'scale', 10, 50, params.scale, 1);
-  controlPanel.createSlider('density-slider', 'Density', 'density', 0.1, 2.0, params.density, 0.05);
+  controlPanel.createSlider('density-slider', 'Density', 'density', 0.1, 1.0, params.density, 0.01);
   controlPanel.createSlider('noise-slider', 'Noise', 'noiseStrength', 0, 5, params.noiseStrength, 0.1);
   
   // Animation Toggle
