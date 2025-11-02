@@ -1,0 +1,25 @@
+{
+  "name": "flowfield-studio",
+  "version": "1.0.0",
+  "description": "Interactive vector-field art generator using p5.js",
+  "main": "index.html",
+  "scripts": {
+    "dev": "npx serve .",
+    "start": "npx serve .",
+    "build": "echo 'Static site - no build needed'",
+    "deploy": "vercel --prod --yes"
+  },
+  "keywords": [
+    "p5js",
+    "generative-art",
+    "flow-field",
+    "creative-coding",
+    "vector-field",
+    "perlin-noise"
+  ],
+  "author": "Antoine Moyroud",
+  "license": "MIT",
+  "dependencies": {},
+  "devDependencies": {}
+}
+

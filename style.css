@@ -1,0 +1,82 @@
+html, body {
+  margin: 0;
+  padding: 0;
+  background: #1a1a1a;
+  font-family: 'Arial', 'Helvetica', sans-serif;
+  overflow: hidden;
+}
+
+main {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  width: 100vw;
+}
+
+#canvas-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+canvas {
+  border-radius: 12px;
+  box-shadow: 
+    0 8px 24px rgba(0, 0, 0, 0.8),
+    0 0 80px rgba(0, 0, 0, 0.4);
+  border: 2px solid #333;
+}
+
+/* Opensource badge */
+.opensource-badge {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  z-index: 1000;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+}
+
+.opensource-badge a {
+  color: #666;
+  text-decoration: none;
+  transition: color 0.3s ease;
+  padding: 6px 10px;
+  border: 1px solid #333;
+  border-radius: 4px;
+  background: rgba(26, 26, 26, 0.8);
+  backdrop-filter: blur(4px);
+  display: inline-block;
+}
+
+.opensource-badge a:hover {
+  color: #fff;
+  border-color: #666;
+}
+
+/* Mobile responsive styles */
+@media (max-width: 768px) {
+  html, body {
+    overflow: auto;
+  }
+  
+  main {
+    height: auto;
+    min-height: 100vh;
+    flex-direction: column;
+    padding: 20px 10px;
+  }
+  
+  #canvas-container {
+    width: 100%;
+    max-width: 100%;
+  }
+  
+  canvas {
+    max-width: 100% !important;
+    height: auto !important;
+    width: 100% !important;
+  }
+}
+
