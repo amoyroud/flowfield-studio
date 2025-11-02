@@ -12,7 +12,7 @@ let params = {
   animationSpeed: 0.05, // Centered in range (0.0005 to 0.1)
   animated: false, // Default to static
   animationMode: 'evolve', // 'evolve', 'particles'
-  patternMode: 'spiral', // 'flowfield', 'spiral', 'vortex'
+  patternMode: 'spiral', // 'flowfield', 'spiral', 'vortex', 'centripetal'
   shapeType: 'line', // 'line', 'dot', 'circle', 'triangle', 'square', 'number'
   mouseEnabled: false, // Default to mouse off
   mouseInfluence: 0.5, // Centered in range (0 to 1)
@@ -52,9 +52,9 @@ function setup() {
   const canvas = createCanvas(canvasSize, canvasSize);
   canvas.parent("canvas-container");
   
-  // Initialize flow field
-  cols = floor(width / params.scale);
-  rows = floor(height / params.scale);
+  // Initialize flow field - use ceil to ensure full coverage of edges
+  cols = ceil(width / params.scale);
+  rows = ceil(height / params.scale);
   
   // Initialize particles
   initParticles();
@@ -85,9 +85,9 @@ function windowResized() {
   
   resizeCanvas(canvasSize, canvasSize);
   
-  // Recalculate grid
-  cols = floor(width / params.scale);
-  rows = floor(height / params.scale);
+  // Recalculate grid - use ceil to ensure full coverage of edges
+  cols = ceil(width / params.scale);
+  rows = ceil(height / params.scale);
   
   // Reinitialize particles for new dimensions
   initParticles();
@@ -122,14 +122,20 @@ function draw() {
 }
 
 function mouseMoved() {
-  // Update static pattern when mouse moves (if mouse interaction is enabled and animation is off)
-  if (params.mouseEnabled && !params.animated) {
+  // Update pattern when mouse moves (if mouse interaction is enabled)
+  if (params.mouseEnabled) {
     // Only regenerate if mouse has moved significantly (reduces jitter)
     let mouseDist = dist(mouseX, mouseY, lastMouseX, lastMouseY);
     if (mouseDist > mouseThreshold) {
       lastMouseX = mouseX;
       lastMouseY = mouseY;
-      generateField();
+      // If animation is off, regenerate field immediately
+      // If animation is on, the draw loop will handle updates, but we still track mouse position
+      if (!params.animated) {
+        generateField();
+      }
+      // When animation is on, the draw loop calls generateField() every frame anyway,
+      // so mouse influence will be applied automatically
     }
   }
   return false; // Prevent default
@@ -144,9 +150,9 @@ function generateField() {
     currentNumberIndex = 0;
   }
   
-  // Recalculate grid if scale changed
-  let newCols = floor(width / params.scale);
-  let newRows = floor(height / params.scale);
+  // Recalculate grid if scale changed - use ceil to ensure full coverage of edges
+  let newCols = ceil(width / params.scale);
+  let newRows = ceil(height / params.scale);
   if (newCols !== cols || newRows !== rows) {
     cols = newCols;
     rows = newRows;
@@ -172,6 +178,9 @@ function drawFieldShapes() {
     case 'vortex':
       drawVortexField();
       break;
+    case 'centripetal':
+      drawCentripetalField();
+      break;
     default:
       drawFlowField();
   }
@@ -179,13 +188,25 @@ function drawFieldShapes() {
 
 function drawFlowField() {
   let yoff = 0;
+  // Distribute grid evenly across full width/height for edge coverage
+  let xStep = cols > 1 ? width / (cols - 1) : 0;
+  let yStep = rows > 1 ? height / (rows - 1) : 0;
+  
   for (let y = 0; y < rows; y++) {
     let xoff = 0;
+    let py = rows > 1 ? (y * yStep) : height / 2;
+    // Clamp to ensure we stay within bounds
+    py = constrain(py, 0, height - 1);
+    
     for (let x = 0; x < cols; x++) {
-      let px = x * params.scale;
-      let py = y * params.scale;
+      let px = cols > 1 ? (x * xStep) : width / 2;
+      // Clamp to ensure we stay within bounds
+      px = constrain(px, 0, width - 1);
       
       // Check if we should draw based on density or image brightness
+      let drawCount = 1;
+      let shouldDraw = false;
+      
       if (uploadedImage && showImage) {
         // Use image brightness to determine if we should draw
         let imgX = floor(map(px, 0, width, 0, uploadedImage.width));
@@ -194,30 +215,51 @@ function drawFlowField() {
         let bright = brightness(c);
         
         // Skip if pixel is too bright (use inverse density based on brightness)
-        if (random(100) > map(bright, 0, 100, params.density * 100, 10)) {
-          xoff += 0.1;
-          continue;
-        }
+        shouldDraw = !(random(100) > map(bright, 0, 100, min(params.density, 1.0) * 100, 10));
       } else {
-        // Normal density check
-        if (random() > params.density) {
-          xoff += 0.1;
-          continue;
+        // Density check - handle full range 0.1 to 2.0
+        if (params.density >= 1.0) {
+          // For density >= 1.0, always draw at least one shape
+          shouldDraw = true;
+          
+          // Calculate how many shapes to draw based on density
+          // At density 1.0: always 1 shape
+          // At density 1.5: always 1 shape + 50% chance for second = average 1.5
+          // At density 2.0: always 2 shapes
+          if (params.density >= 2.0) {
+            drawCount = 2;
+          } else if (params.density > 1.0) {
+            // For values between 1.0 and 2.0:
+            // Always draw 1, plus probability for second based on fractional part
+            let fractionalPart = params.density - 1.0;
+            if (random() < fractionalPart) {
+              drawCount = 2;
+            }
+          }
+          // At exactly 1.0, drawCount stays at 1
+        } else {
+          // Normal probability check for density < 1.0
+          shouldDraw = random() <= params.density;
         }
       }
       
-      let angle = noise(xoff, yoff, zoff) * TWO_PI * params.noiseStrength;
-      
-      // If image is present, influence angle based on pixel brightness/color
-      if (uploadedImage && showImage) {
-        angle = applyImageInfluence(px, py, angle);
+      if (shouldDraw) {
+        // Draw the shape(s)
+        for (let i = 0; i < drawCount; i++) {
+          let angle = noise(xoff, yoff, zoff) * TWO_PI * params.noiseStrength;
+          
+          // If image is present, influence angle based on pixel brightness/color
+          if (uploadedImage && showImage) {
+            angle = applyImageInfluence(px, py, angle);
+          }
+          
+          // Apply mouse influence if within radius
+          angle = applyMouseInfluence(px, py, angle);
+          
+          drawShape(px, py, angle);
+          xoff += 0.1;
+        }
       }
-      
-      // Apply mouse influence if within radius
-      angle = applyMouseInfluence(px, py, angle);
-      
-      drawShape(px, py, angle);
-      
       xoff += 0.1;
     }
     yoff += 0.1;
@@ -228,38 +270,64 @@ function drawSpiralField() {
   let centerX = width / 2;
   let centerY = height / 2;
   let rotation = zoff * 2;
+  // Distribute grid evenly across full width/height for edge coverage
+  let xStep = cols > 1 ? width / (cols - 1) : 0;
+  let yStep = rows > 1 ? height / (rows - 1) : 0;
   
   for (let y = 0; y < rows; y++) {
+    let py = rows > 1 ? (y * yStep) : height / 2;
+    py = constrain(py, 0, height - 1);
+    
     for (let x = 0; x < cols; x++) {
-      let px = x * params.scale;
-      let py = y * params.scale;
+      let px = cols > 1 ? (x * xStep) : width / 2;
+      px = constrain(px, 0, width - 1);
       
       // Check if we should draw based on density or image brightness
+      let drawCount = 1;
+      let shouldDraw = false;
+      
       if (uploadedImage && showImage) {
         let imgX = floor(map(px, 0, width, 0, uploadedImage.width));
         let imgY = floor(map(py, 0, height, 0, uploadedImage.height));
         let c = uploadedImage.get(imgX, imgY);
         let bright = brightness(c);
-        if (random(100) > map(bright, 0, 100, params.density * 100, 10)) continue;
+        shouldDraw = !(random(100) > map(bright, 0, 100, min(params.density, 1.0) * 100, 10));
       } else {
-        if (random() > params.density) continue;
+        if (params.density >= 1.0) {
+          shouldDraw = true;
+          
+          if (params.density >= 2.0) {
+            drawCount = 2;
+          } else if (params.density > 1.0) {
+            let fractionalPart = params.density - 1.0;
+            if (random() < fractionalPart) {
+              drawCount = 2;
+            }
+          }
+        } else {
+          shouldDraw = random() <= params.density;
+        }
       }
       
-      // Calculate angle based on distance from center
-      let dx = px - centerX;
-      let dy = py - centerY;
-      let distance = dist(px, py, centerX, centerY);
-      let angle = atan2(dy, dx) + rotation + (distance * 0.01);
-      
-      // If image is present, influence angle based on pixel brightness/color
-      if (uploadedImage && showImage) {
-        angle = applyImageInfluence(px, py, angle);
+      if (shouldDraw) {
+        for (let i = 0; i < drawCount; i++) {
+          // Calculate angle based on distance from center
+          let dx = px - centerX;
+          let dy = py - centerY;
+          let distance = dist(px, py, centerX, centerY);
+          let angle = atan2(dy, dx) + rotation + (distance * 0.01);
+          
+          // If image is present, influence angle based on pixel brightness/color
+          if (uploadedImage && showImage) {
+            angle = applyImageInfluence(px, py, angle);
+          }
+          
+          // Apply mouse influence
+          angle = applyMouseInfluence(px, py, angle);
+          
+          drawShape(px, py, angle);
+        }
       }
-      
-      // Apply mouse influence
-      angle = applyMouseInfluence(px, py, angle);
-      
-      drawShape(px, py, angle);
     }
   }
 }
@@ -269,48 +337,142 @@ function drawVortexField() {
   let vortex1 = { x: width * 0.3, y: height * 0.3 };
   let vortex2 = { x: width * 0.7, y: height * 0.7 };
   let rotation = zoff * 3;
+  // Distribute grid evenly across full width/height for edge coverage
+  let xStep = cols > 1 ? width / (cols - 1) : 0;
+  let yStep = rows > 1 ? height / (rows - 1) : 0;
   
   for (let y = 0; y < rows; y++) {
+    let py = rows > 1 ? (y * yStep) : height / 2;
+    py = constrain(py, 0, height - 1);
+    
     for (let x = 0; x < cols; x++) {
-      let px = x * params.scale;
-      let py = y * params.scale;
+      let px = cols > 1 ? (x * xStep) : width / 2;
+      px = constrain(px, 0, width - 1);
       
       // Check if we should draw based on density or image brightness
+      let drawCount = 1;
+      let shouldDraw = false;
+      
       if (uploadedImage && showImage) {
         let imgX = floor(map(px, 0, width, 0, uploadedImage.width));
         let imgY = floor(map(py, 0, height, 0, uploadedImage.height));
         let c = uploadedImage.get(imgX, imgY);
         let bright = brightness(c);
-        if (random(100) > map(bright, 0, 100, params.density * 100, 10)) continue;
+        shouldDraw = !(random(100) > map(bright, 0, 100, min(params.density, 1.0) * 100, 10));
       } else {
-        if (random() > params.density) continue;
+        if (params.density >= 1.0) {
+          shouldDraw = true;
+          
+          if (params.density >= 2.0) {
+            drawCount = 2;
+          } else if (params.density > 1.0) {
+            let fractionalPart = params.density - 1.0;
+            if (random() < fractionalPart) {
+              drawCount = 2;
+            }
+          }
+        } else {
+          shouldDraw = random() <= params.density;
+        }
       }
       
-      // Calculate combined force from both vortices
-      let angle1 = atan2(py - vortex1.y, px - vortex1.x) + rotation;
-      let dist1 = dist(px, py, vortex1.x, vortex1.y);
-      let force1 = 1 / (dist1 * 0.01 + 1);
+      if (shouldDraw) {
+        for (let i = 0; i < drawCount; i++) {
+          // Calculate combined force from both vortices
+          let angle1 = atan2(py - vortex1.y, px - vortex1.x) + rotation;
+          let dist1 = dist(px, py, vortex1.x, vortex1.y);
+          let force1 = 1 / (dist1 * 0.01 + 1);
+          
+          let angle2 = atan2(py - vortex2.y, px - vortex2.x) - rotation;
+          let dist2 = dist(px, py, vortex2.x, vortex2.y);
+          let force2 = 1 / (dist2 * 0.01 + 1);
+          
+          // Combine angles weighted by force
+          let v1 = p5.Vector.fromAngle(angle1).mult(force1);
+          let v2 = p5.Vector.fromAngle(angle2).mult(force2);
+          let combined = p5.Vector.add(v1, v2);
+          
+          let angle = combined.heading();
+          
+          // If image is present, influence angle based on pixel brightness/color
+          if (uploadedImage && showImage) {
+            angle = applyImageInfluence(px, py, angle);
+          }
+          
+          // Apply mouse influence
+          angle = applyMouseInfluence(px, py, angle);
+          
+          drawShape(px, py, angle);
+        }
+      }
+    }
+  }
+}
+
+function drawCentripetalField() {
+  // Centripetal pattern - all shapes point toward the center in unison
+  let centerX = width / 2;
+  let centerY = height / 2;
+  let rotation = zoff * 2; // Optional: add rotation for animated effect
+  // Distribute grid evenly across full width/height for edge coverage
+  let xStep = cols > 1 ? width / (cols - 1) : 0;
+  let yStep = rows > 1 ? height / (rows - 1) : 0;
+  
+  for (let y = 0; y < rows; y++) {
+    let py = rows > 1 ? (y * yStep) : height / 2;
+    py = constrain(py, 0, height - 1);
+    
+    for (let x = 0; x < cols; x++) {
+      let px = cols > 1 ? (x * xStep) : width / 2;
+      px = constrain(px, 0, width - 1);
       
-      let angle2 = atan2(py - vortex2.y, px - vortex2.x) - rotation;
-      let dist2 = dist(px, py, vortex2.x, vortex2.y);
-      let force2 = 1 / (dist2 * 0.01 + 1);
+      // Check if we should draw based on density or image brightness
+      let drawCount = 1;
+      let shouldDraw = false;
       
-      // Combine angles weighted by force
-      let v1 = p5.Vector.fromAngle(angle1).mult(force1);
-      let v2 = p5.Vector.fromAngle(angle2).mult(force2);
-      let combined = p5.Vector.add(v1, v2);
-      
-      let angle = combined.heading();
-      
-      // If image is present, influence angle based on pixel brightness/color
       if (uploadedImage && showImage) {
-        angle = applyImageInfluence(px, py, angle);
+        let imgX = floor(map(px, 0, width, 0, uploadedImage.width));
+        let imgY = floor(map(py, 0, height, 0, uploadedImage.height));
+        let c = uploadedImage.get(imgX, imgY);
+        let bright = brightness(c);
+        shouldDraw = !(random(100) > map(bright, 0, 100, min(params.density, 1.0) * 100, 10));
+      } else {
+        if (params.density >= 1.0) {
+          shouldDraw = true;
+          
+          if (params.density >= 2.0) {
+            drawCount = 2;
+          } else if (params.density > 1.0) {
+            let fractionalPart = params.density - 1.0;
+            if (random() < fractionalPart) {
+              drawCount = 2;
+            }
+          }
+        } else {
+          shouldDraw = random() <= params.density;
+        }
       }
       
-      // Apply mouse influence
-      angle = applyMouseInfluence(px, py, angle);
-      
-      drawShape(px, py, angle);
+      if (shouldDraw) {
+        for (let i = 0; i < drawCount; i++) {
+          // Calculate angle pointing toward center
+          // atan2 gives angle from shape position to center, but we want the shape to point TO the center
+          // So we use atan2(centerY - py, centerX - px) which is the angle from shape to center
+          let dx = centerX - px;
+          let dy = centerY - py;
+          let angle = atan2(dy, dx) + rotation;
+          
+          // If image is present, influence angle based on pixel brightness/color
+          if (uploadedImage && showImage) {
+            angle = applyImageInfluence(px, py, angle);
+          }
+          
+          // Apply mouse influence
+          angle = applyMouseInfluence(px, py, angle);
+          
+          drawShape(px, py, angle);
+        }
+      }
     }
   }
 }
@@ -558,6 +720,14 @@ function updateFlowField() {
           angle = combined.heading();
           break;
           
+        case 'centripetal':
+          let centripetalCenterX = width / 2;
+          let centripetalCenterY = height / 2;
+          let centripetalDx = centripetalCenterX - px;
+          let centripetalDy = centripetalCenterY - py;
+          angle = atan2(centripetalDy, centripetalDx) + (zoff * 2);
+          break;
+          
         default: // flowfield
           angle = noise(xoff, yoff, zoff) * TWO_PI * params.noiseStrength;
       }
@@ -632,7 +802,7 @@ function setupControls() {
   
   // Static Control Sliders (always visible)
   controlPanel.createSlider('scale-slider', 'Scale', 'scale', 10, 50, params.scale, 1);
-  controlPanel.createSlider('density-slider', 'Density', 'density', 0.1, 1, params.density, 0.05);
+  controlPanel.createSlider('density-slider', 'Density', 'density', 0.1, 2.0, params.density, 0.05);
   controlPanel.createSlider('noise-slider', 'Noise', 'noiseStrength', 0, 5, params.noiseStrength, 0.1);
   
   // Animation Toggle
@@ -656,7 +826,8 @@ function setupControls() {
   controlPanel.createSelector('pattern-selector', 'Pattern', 'patternMode', [
     { value: 'flowfield', label: 'Flow Field' },
     { value: 'spiral', label: 'Spiral' },
-    { value: 'vortex', label: 'Vortex' }
+    { value: 'vortex', label: 'Vortex' },
+    { value: 'centripetal', label: 'Centripetal' }
   ], params.patternMode);
   
   controlPanel.createSelector('shape-selector', 'Shape', 'shapeType', [
@@ -705,6 +876,16 @@ function setupControls() {
       if (radiusContainer) {
         radiusContainer.style.display = value ? 'flex' : 'none';
       }
+      // Regenerate field when mouse interaction is toggled so user can see the effect
+      if (!params.animated) {
+        generateField();
+      }
+      return;
+    }
+    
+    // Handle mouse influence/radius changes - regenerate if animation is off
+    if ((param === 'mouseInfluence' || param === 'mouseRadius') && !params.animated) {
+      generateField();
       return;
     }
     
@@ -1014,8 +1195,8 @@ function generateStandaloneHTML() {
       const canvas = createCanvas(800, 800);
       canvas.parent("canvas-container");
       
-      cols = floor(width / params.scale);
-      rows = floor(height / params.scale);
+      cols = ceil(width / params.scale);
+      rows = ceil(height / params.scale);
       
       initParticles();
       
@@ -1051,8 +1232,8 @@ function generateStandaloneHTML() {
     function generateField() {
       background(params.backgroundColor);
       
-      let newCols = floor(width / params.scale);
-      let newRows = floor(height / params.scale);
+      let newCols = ceil(width / params.scale);
+      let newRows = ceil(height / params.scale);
       if (newCols !== cols || newRows !== rows) {
         cols = newCols;
         rows = newRows;
@@ -1074,6 +1255,9 @@ function generateStandaloneHTML() {
           break;
         case 'vortex':
           drawVortexField();
+          break;
+        case 'centripetal':
+          drawCentripetalField();
           break;
         default:
           drawFlowField();
@@ -1157,6 +1341,31 @@ function generateStandaloneHTML() {
           let combined = p5.Vector.add(v1, v2);
           
           let angle = combined.heading();
+          
+          if (params.mouseEnabled) {
+            angle = applyMouseInfluence(px, py, angle);
+          }
+          
+          drawShape(px, py, angle);
+        }
+      }
+    }
+    
+    function drawCentripetalField() {
+      let centerX = width / 2;
+      let centerY = height / 2;
+      let rotation = zoff * 2;
+      
+      for (let y = 0; y < rows; y++) {
+        for (let x = 0; x < cols; x++) {
+          let px = x * params.scale;
+          let py = y * params.scale;
+          
+          if (random() > params.density) continue;
+          
+          let dx = centerX - px;
+          let dy = centerY - py;
+          let angle = atan2(dy, dx) + rotation;
           
           if (params.mouseEnabled) {
             angle = applyMouseInfluence(px, py, angle);
@@ -1399,6 +1608,14 @@ function generateStandaloneHTML() {
               let v2 = p5.Vector.fromAngle(angle2).mult(force2);
               let combined = p5.Vector.add(v1, v2);
               angle = combined.heading();
+              break;
+              
+            case 'centripetal':
+              let centripetalCenterX = width / 2;
+              let centripetalCenterY = height / 2;
+              let centripetalDx = centripetalCenterX - px;
+              let centripetalDy = centripetalCenterY - py;
+              angle = atan2(centripetalDy, centripetalDx) + (zoff * 2);
               break;
               
             default:

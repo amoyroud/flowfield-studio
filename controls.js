@@ -75,11 +75,16 @@ class Slider {
   
   updateValueFromEvent(e) {
     const rect = this.track.getBoundingClientRect();
+    // Calculate precise cursor position relative to slider track
     const x = Math.max(0, Math.min(e.clientX - rect.left, rect.width));
-    const percentage = x / rect.width;
+    // Calculate percentage: 0.0 at far left, 1.0 at far right - linear mapping
+    const percentage = rect.width > 0 ? x / rect.width : 0;
     
+    // Linear interpolation: value increases homogeneously from min to max
     let newValue = this.min + percentage * (this.max - this.min);
+    // Round to nearest step for discrete values
     newValue = Math.round(newValue / this.step) * this.step;
+    // Clamp to valid range
     newValue = Math.max(this.min, Math.min(this.max, newValue));
     
     if (newValue !== this.value) {
