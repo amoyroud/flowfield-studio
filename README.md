@@ -14,7 +14,8 @@ A modular p5.js project for generating dynamic vector-field art with interactive
 - ✅ Export artwork as PNG images
 - ✅ **Video recording** - Record animations as MP4 video files (user-controlled duration)
 - ✅ **Code export** - Generate standalone HTML files
-- ✅ Responsive canvas rendering (800x800)
+- ✅ **Mobile-optimized** - Fully responsive design for Twitter mobile users
+- ✅ Responsive canvas rendering with automatic sizing
 
 ## How to Use
 
@@ -59,12 +60,21 @@ A modular p5.js project for generating dynamic vector-field art with interactive
 - Ready to upload to any website
 - Code is also copied to clipboard for easy use
 
+## Mobile Support
+
+FlowField Studio is now fully optimized for mobile devices and works great when shared on Twitter:
+
+- **Responsive canvas sizing** - Automatically adapts to screen size
+- **Touch-optimized controls** - Larger touch targets and touch-friendly sliders
+- **Performance optimized** - Reduced particle count on mobile for smooth animations
+- **Portrait & landscape** - Handles both orientations gracefully
+- **iOS ready** - Full Apple mobile web app support
+
 ## Future Enhancements
 
 - 🎬 GIF export option
 - 🎥 Customizable video duration and format options (MOV, AVI)
 - 🪟 Embed as a window in Windows 95 desktop
-- 📱 Enhanced mobile touch controls
 
 ## Technical Details
 

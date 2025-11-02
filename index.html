@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover" />
     <meta name="theme-color" content="#1a1a1a" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -18,125 +18,124 @@
   <body>
     <main>
       <div id="canvas-container"></div>
-    </main>
-    
-    <div id="control-panel">
-      <div class="panel-header">
-        <h2 class="panel-title">Flow Field Studio</h2>
-      </div>
       
-      <div class="control-group control-grid-full">
-        <div id="scale-slider" class="slider"></div>
-      </div>
-      
-      <div class="control-group control-grid-full">
-        <div id="density-slider" class="slider"></div>
-      </div>
-      
-      <div class="control-group control-grid-full">
-        <div id="noise-slider" class="slider"></div>
-      </div>
-      
-      <div class="control-divider"></div>
-      
-      <!-- ANIMATION SECTION -->
-      <div class="section-header">
-        <span class="control-section-label">ANIMATION</span>
-        <div id="animate-toggle" class="toggle toggle-inline"></div>
-      </div>
-      
-      <div id="speed-container" class="control-group control-grid-full" style="display: none;">
-        <div id="speed-slider" class="slider"></div>
-      </div>
-      
-      <div class="control-divider"></div>
-      
-      <!-- MOUSE INTERACTION SECTION -->
-      <div class="section-header">
-        <span class="control-section-label">MOUSE INTERACTION</span>
-        <div id="mouse-toggle" class="toggle toggle-inline"></div>
-      </div>
-      
-      <div id="mouse-influence-container" class="control-group control-grid-full" style="display: none;">
-        <div id="mouse-influence-slider" class="slider"></div>
-      </div>
-      
-      <div id="mouse-radius-container" class="control-group control-grid-full" style="display: none;">
-        <div id="mouse-radius-slider" class="slider"></div>
-      </div>
-      
-      <div class="control-divider"></div>
-      
-      <div class="control-grid">
-        <div class="control-group">
-          <div id="bg-color-picker" class="color-picker"></div>
+      <div id="control-panel">
+        <div class="panel-header">
+          <h2 class="panel-title">Flow Field Studio</h2>
         </div>
         
-        <div class="control-group">
-          <div id="line-color-picker" class="color-picker"></div>
-        </div>
-      </div>
-      
-      <div class="control-divider"></div>
-      
-      <div class="control-grid control-grid-3">
-        <div class="control-group">
-          <div id="pattern-selector" class="selector"></div>
+        <div class="control-group control-grid-full">
+          <div id="scale-slider" class="slider"></div>
         </div>
         
-        <div class="control-group">
-          <div id="shape-selector" class="selector"></div>
+        <div class="control-group control-grid-full">
+          <div id="density-slider" class="slider"></div>
         </div>
         
-        <div class="control-group">
-          <div id="animation-selector" class="selector"></div>
+        <div class="control-group control-grid-full">
+          <div id="noise-slider" class="slider"></div>
         </div>
-      </div>
-      
-      <!-- NUMBER SETTINGS (conditionally visible) -->
-      <div id="number-settings-section" style="display: none;">
+        
         <div class="control-divider"></div>
         
-        <div class="control-group">
-          <label for="number-mode" class="upload-label">Number Mode</label>
-          <select id="number-mode" class="number-mode-select">
-            <option value="custom">Custom</option>
-            <option value="range">1-10 Range</option>
-          </select>
+        <!-- ANIMATION SECTION -->
+        <div class="section-header">
+          <span class="control-section-label">ANIMATION</span>
+          <div id="animate-toggle" class="toggle toggle-inline"></div>
         </div>
         
-        <div id="custom-number-container" class="control-group">
-          <label for="custom-number" class="upload-label">Number</label>
-          <input type="number" id="custom-number" min="0" max="999" value="0" class="number-input" />
+        <div id="speed-container" class="control-group control-grid-full" style="display: none;">
+          <div id="speed-slider" class="slider"></div>
+        </div>
+        
+        <div class="control-divider"></div>
+        
+        <!-- MOUSE INTERACTION SECTION -->
+        <div class="section-header">
+          <span class="control-section-label">MOUSE INTERACTION</span>
+          <div id="mouse-toggle" class="toggle toggle-inline"></div>
+        </div>
+        
+        <div id="mouse-influence-container" class="control-group control-grid-full" style="display: none;">
+          <div id="mouse-influence-slider" class="slider"></div>
+        </div>
+        
+        <div id="mouse-radius-container" class="control-group control-grid-full" style="display: none;">
+          <div id="mouse-radius-slider" class="slider"></div>
+        </div>
+        
+        <div class="control-divider"></div>
+        
+        <div class="control-grid">
+          <div class="control-group">
+            <div id="bg-color-picker" class="color-picker"></div>
+          </div>
+          
+          <div class="control-group">
+            <div id="line-color-picker" class="color-picker"></div>
+          </div>
+        </div>
+        
+        <div class="control-divider"></div>
+        
+        <div class="control-grid control-grid-3">
+          <div class="control-group">
+            <div id="pattern-selector" class="selector"></div>
+          </div>
+          
+          <div class="control-group">
+            <div id="shape-selector" class="selector"></div>
+          </div>
+          
+          <div class="control-group">
+            <div id="animation-selector" class="selector"></div>
+          </div>
+        </div>
+        
+        <!-- NUMBER SETTINGS (conditionally visible) -->
+        <div id="number-settings-section" style="display: none;">
+          <div class="control-divider"></div>
+          
+          <div class="control-group">
+            <label for="number-mode" class="upload-label">Number Mode</label>
+            <select id="number-mode" class="number-mode-select">
+              <option value="custom">Custom</option>
+              <option value="range">1-10 Range</option>
+            </select>
+          </div>
+          
+          <div id="custom-number-container" class="control-group">
+            <label for="custom-number" class="upload-label">Number</label>
+            <input type="number" id="custom-number" min="0" max="999" value="0" class="number-input" />
+          </div>
+        </div>
+        
+        <div class="control-divider"></div>
+        
+        <div id="image-upload-container" class="control-group">
+          <label for="image-upload" class="upload-label">IMAGE</label>
+          <div class="image-upload-row">
+            <input type="file" id="image-upload" accept="image/*" class="file-input" />
+            <div id="show-image-toggle" class="toggle toggle-inline" style="display: none;"></div>
+          </div>
+        </div>
+        
+        <button id="save-btn" class="control-button primary">Save PNG</button>
+        
+        <div class="control-divider"></div>
+        
+        <div class="button-group">
+          <button id="record-btn" class="control-button">
+            <span class="btn-icon">⏺</span> Record
+          </button>
+          <div id="recording-status" class="recording-status" style="display: none;">
+            <span class="recording-dot"></span>
+            <span id="recording-time">0:00</span>
+          </div>
+          <button id="export-code-btn" class="control-button secondary">Export Code</button>
         </div>
       </div>
-      
-      <div class="control-divider"></div>
-      
-      <div id="image-upload-container" class="control-group">
-        <label for="image-upload" class="upload-label">IMAGE</label>
-        <div class="image-upload-row">
-          <input type="file" id="image-upload" accept="image/*" class="file-input" />
-          <div id="show-image-toggle" class="toggle toggle-inline" style="display: none;"></div>
-        </div>
-      </div>
-      
-      <button id="save-btn" class="control-button primary">Save PNG</button>
-      
-      <div class="control-divider"></div>
-      
-      <div class="button-group">
-        <button id="record-btn" class="control-button">
-          <span class="btn-icon">⏺</span> Start Recording
-        </button>
-        <div id="recording-status" class="recording-status" style="display: none;">
-          <span class="recording-dot"></span>
-          <span id="recording-time">0:00</span>
-        </div>
-      </div>
-      
-      <button id="export-code-btn" class="control-button secondary">Export Code</button>
-    </div>
+    </main>
     
     <div class="opensource-badge">
       <a href="https://github.com/amoyroud/flowfield-studio" target="_blank" rel="noopener noreferrer">

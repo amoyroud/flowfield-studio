@@ -44,7 +44,12 @@ let recordingStartTime;
 let recordingInterval;
 
 function setup() {
-  const canvas = createCanvas(800, 800);
+  // Calculate responsive canvas size
+  const maxWidth = min(windowWidth - 40, 800); // Account for padding
+  const maxHeight = min(windowHeight - 40, 800);
+  const canvasSize = min(maxWidth, maxHeight);
+  
+  const canvas = createCanvas(canvasSize, canvasSize);
   canvas.parent("canvas-container");
   
   // Initialize flow field
@@ -70,6 +75,27 @@ function setup() {
   
   // Generate initial field
   generateField();
+}
+
+// Handle window resize for responsive design
+function windowResized() {
+  const maxWidth = min(windowWidth - 40, 800);
+  const maxHeight = min(windowHeight - 40, 800);
+  const canvasSize = min(maxWidth, maxHeight);
+  
+  resizeCanvas(canvasSize, canvasSize);
+  
+  // Recalculate grid
+  cols = floor(width / params.scale);
+  rows = floor(height / params.scale);
+  
+  // Reinitialize particles for new dimensions
+  initParticles();
+  
+  // Regenerate field
+  if (!params.animated) {
+    generateField();
+  }
 }
 
 function draw() {
@@ -483,10 +509,17 @@ class Particle {
 
 function initParticles() {
   particles = [];
-  let particleCount = 500;
+  // Reduce particle count on mobile for better performance
+  let particleCount = isMobile() ? 200 : 500;
   for (let i = 0; i < particleCount; i++) {
     particles.push(new Particle());
   }
+}
+
+// Detect if running on mobile device
+function isMobile() {
+  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
+         window.innerWidth <= 768;
 }
 
 function updateFlowField() {
@@ -899,7 +932,7 @@ function stopRecording() {
   // Update UI
   const recordBtn = document.getElementById('record-btn');
   recordBtn.classList.remove('recording');
-  recordBtn.innerHTML = '<span class="btn-icon">⏺</span> Start Recording';
+  recordBtn.innerHTML = '<span class="btn-icon">⏺</span> Record';
   
   const recordingStatus = document.getElementById('recording-status');
   recordingStatus.style.display = 'none';

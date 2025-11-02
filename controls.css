@@ -3,11 +3,16 @@
  * Metallic rotary knobs, LED indicators, and futuristic UI
  */
 
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
 #control-panel {
   position: fixed;
   top: 20px;
   right: 20px;
   width: 280px;
+  max-width: calc(100% - 40px);
   max-height: calc(100vh - 40px);
   overflow-y: auto;
   overflow-x: hidden;
@@ -311,12 +316,12 @@
 /* Selector Styling */
 .selector select {
   width: 100%;
-  padding: 6px 4px;
+  padding: 8px 6px;
   background: linear-gradient(to bottom, #3a3a3a, #2a2a2a);
   border: 2px solid #444;
   border-radius: 6px;
   color: #aaa;
-  font-size: 9px;
+  font-size: 10px;
   cursor: pointer;
   box-shadow: 
     0 2px 4px rgba(0, 0, 0, 0.5),
@@ -432,7 +437,7 @@
 
 .control-grid-3 {
   grid-template-columns: 1fr 1fr 1fr;
-  gap: 2px;
+  gap: 8px;
 }
 
 .control-grid-full {
@@ -536,10 +541,7 @@
 
 .file-input::file-selector-button {
   width: 100%;
-  min-height: 14px;
-  height: 14px;
-  line-height: 10px;
-  padding: 0 8px;
+  padding: 6px 4px;
   background: linear-gradient(to bottom, #3a3a3a, #2a2a2a);
   border: 2px solid #444;
   border-radius: 6px;
@@ -556,11 +558,18 @@
 }
 
 .file-input::file-selector-button:hover {
-  background: linear-gradient(to bottom, #4a4a4a, #3a3a3a);
   border-color: #555;
   box-shadow: 
     0 2px 8px rgba(0, 0, 0, 0.6),
-    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.file-input::file-selector-button:focus {
+  outline: none;
+  border-color: #4CAF50;
+  box-shadow: 
+    0 0 8px rgba(76, 175, 80, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 /* Responsive adjustments */
@@ -573,12 +582,14 @@
 @media (max-width: 768px) {
   html, body {
     overflow: auto;
+    -webkit-overflow-scrolling: touch;
   }
   
   main {
     height: auto;
     min-height: 100vh;
-    padding: 20px;
+    padding: 10px;
+    gap: 10px;
   }
   
   #canvas-container canvas {
@@ -588,35 +599,117 @@
   
   #control-panel {
     position: relative;
-    width: 100%;
-    max-width: 500px;
+    width: calc(100% - 20px);
+    max-width: 100%;
     top: 0;
     right: auto;
     left: 50%;
     transform: translateX(-50%);
-    margin: 20px auto;
+    margin: 10px auto;
     max-height: none;
+    padding: 16px 12px;
   }
   
   .control-grid {
     grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  
+  .control-grid-3 {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  
+  .control-button {
+    padding: 12px;
+    font-size: 12px;
+    touch-action: manipulation;
+  }
+  
+  .selector select {
+    padding: 12px 8px;
+    font-size: 12px;
+    min-height: 44px; /* iOS touch target minimum */
+  }
+  
+  .slider {
+    padding: 6px 0;
+    margin-bottom: 12px;
+  }
+  
+  .slider-thumb {
+    width: 18px;
+    height: 18px;
+  }
+  
+  .toggle {
+    width: 40px;
+    height: 16px;
+  }
+  
+  .toggle-thumb {
+    width: 12px;
+    height: 12px;
+  }
+  
+  .color-preview {
+    width: 60px;
+    height: 60px;
+  }
+  
+  .section-header {
+    margin: 8px 0;
   }
 }
 
 @media (max-width: 480px) {
   #control-panel {
-    width: calc(100% - 20px);
-    margin: 10px auto;
-    padding: 15px;
+    width: calc(100% - 10px);
+    margin: 5px auto;
+    padding: 12px 10px;
   }
   
   .panel-title {
-    font-size: 12px;
+    font-size: 11px;
   }
   
   .control-button {
-    padding: 10px;
+    padding: 12px;
     font-size: 11px;
+    min-height: 44px; /* iOS touch target minimum */
+  }
+  
+  .selector select {
+    padding: 12px 8px;
+    font-size: 11px;
+    min-height: 44px; /* iOS touch target minimum */
+  }
+  
+  .slider-thumb {
+    width: 20px;
+    height: 20px;
+  }
+  
+  .toggle {
+    width: 44px;
+    height: 18px;
+  }
+  
+  .toggle-thumb {
+    width: 14px;
+    height: 14px;
+  }
+  
+  .color-preview {
+    width: 50px;
+    height: 50px;
+  }
+  
+  .control-group label,
+  .section-header,
+  .control-section-label,
+  .upload-label {
+    font-size: 10px;
   }
 }
 
@@ -668,9 +761,15 @@
 .button-group {
   width: 100%;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   gap: 8px;
   margin-top: 8px;
+  align-items: stretch;
+}
+
+.button-group .control-button {
+  flex: 1;
+  margin-top: 0;
 }
 
 .recording-status {

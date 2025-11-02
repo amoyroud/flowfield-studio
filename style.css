@@ -59,24 +59,61 @@ canvas {
 @media (max-width: 768px) {
   html, body {
     overflow: auto;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y pan-x;
   }
   
   main {
     height: auto;
     min-height: 100vh;
     flex-direction: column;
-    padding: 20px 10px;
+    padding: 10px;
+    gap: 10px;
   }
   
   #canvas-container {
     width: 100%;
     max-width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
   
   canvas {
     max-width: 100% !important;
     height: auto !important;
-    width: 100% !important;
+    width: auto !important;
+    border-radius: 8px;
+    border: 2px solid #333;
+    box-shadow: 
+      0 4px 12px rgba(0, 0, 0, 0.8),
+      0 0 40px rgba(0, 0, 0, 0.4);
+  }
+  
+  .opensource-badge {
+    position: relative;
+    bottom: auto;
+    left: auto;
+    display: flex;
+    justify-content: center;
+    margin: 10px 0;
+  }
+  
+  .opensource-badge a {
+    font-size: 11px;
+    padding: 4px 8px;
+  }
+}
+
+/* Extra small devices */
+@media (max-width: 480px) {
+  main {
+    padding: 5px;
+  }
+  
+  canvas {
+    border-radius: 6px;
+    border-width: 1px;
   }
 }
 
